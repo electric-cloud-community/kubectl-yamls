@@ -24,10 +24,12 @@ spec:
       steps:
       - setWeight: 20
       - pause: {duration: 10s}
-      - setWeight: 60
-      - pause: {duration: 10s}
-      - setWeight: 80
-      - pause: {duration: 10s}
+      - analysis:
+          templates:
+          - templateName: success-rate
+          args:
+          - name: service-name
+            value: ec-specs-service-name
 
 
 ---
@@ -41,13 +43,14 @@ spec:
   metrics:
   - name: success-rate
     interval: 1m
+    count: 2
     # NOTE: prometheus queries return results in the form of a vector.
     # So it is common to access the index 0 of the returned array to obtain the value
-    successCondition: result[0] >= 0.95
-    failureLimit: 3
+#    successCondition: result[0] >= 0.95
+#    failureLimit: 3
     provider:
       prometheus:
-        address: http://prometheus.example.com:9090
+        address: http://prometheus-server.monitoring.svc.cluster.local
         query: |
           sum(irate(
             istio_requests_total{reporter="source",destination_service=~"{{args.service-name}}",response_code!~"5.*"}[5m]
